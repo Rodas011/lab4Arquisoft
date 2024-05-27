@@ -1,52 +1,34 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const port = 3000;
+const log = console.log
+//Inicilizamos el servidor http , socket.io y el numero de puerto
+const http = require('http').createServer()
+const io = require('socket.io')(http)
+const port = 3000
 
-const server = http.createServer((req, res) => {
-    // Configura CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+http.listen(port, ()=> log(`server listening on port : ${port}`))
 
-    // Sirve archivos estáticos
-    if (req.method === 'GET') {
-        let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-        let extname = path.extname(filePath);
-        let contentType = 'text/html';
+let gateCards = [
+    { id: 1, flightNumber: 'AA123', destiny: 'DEU', airline: 'LATAM', departure: '10:00 AM' },
+    { id: 2, flightNumber: 'BA456', destiny: 'BRA', airline: 'Avianca', departure: '10:00 PM' }
+];
 
-        switch (extname) {
-            case '.js':
-                contentType = 'text/javascript';
-                break;
-            case '.css':
-                contentType = 'text/css';
-                break;
+io.on('connection',(socket) =>{
+    log('connected')
+    socket.emit('initialData', gateCards);
+    socket.on('updateGate', (updatedGate) => {
+        const index = gateCards.findIndex(gate => gate.id === updatedGate.id);
+        if (index !== -1) {
+            gateCards[index] = updatedGate;
+            io.emit('gateUpdated', updatedGate); // Enviar los cambios a todos los clientes conectados
         }
-
-        fs.readFile(filePath, (err, content) => {
-            if (err) {
-                console.error(err); // Log the error to the server console
-                res.writeHead(500);
-                res.end(`Server Error: ${err.code}`);
-            } else {
-                res.writeHead(200, { 'Content-Type': contentType });
-                res.end(content, 'utf-8');
-            }
-        });
-    }
-});
-
-const io = require('socket.io')(server); // Pasa la instancia del servidor a socket.io
-
-server.listen(port, () => console.log(`Server running on port ${port}`));
-
-io.on('connection', (socket) => {
-    console.log('connected');
-    socket.on('message', (evt) => {
-        console.log(evt);
-        socket.broadcast.emit('message', evt);
     });
 });
 
-io.on('disconnect', (evt) => {
-    console.log('some people left');
+//Activamos la cabecera CORS
+
+http.prependListener("request", (req,res) =>{
+    res.setHeader("Access-Control-Allow-Origin","*");
 });
+
+io.on('disconnect', (evt)=>{
+    log('conexión cerrada')
+})

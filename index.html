@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="./styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Time</title>
+    <title>Document Editor Real Time</title>
 </head>
-<body>
-    <h3>Realtime Editor/Collaboration</h3>
-    <div>
-        <textarea rows="30" cols="50" id="editor" style="background-color:rgb(112, 109, 109);color:white" placeholder="Type Your Text...">
-        </textarea>
-    </div>
-</body>
+
+<div id="container">
+    <h1>Aeropuerto</h1>
+    <div id="gates"></div>
+</div>
+
 <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
 <script src="./client.js"></script>
+
 </html>
